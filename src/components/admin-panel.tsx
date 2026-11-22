@@ -313,8 +313,7 @@ export default function AdminPanel() {
     {tab === "courses" && <section className="admin-panel">
       <div className="section-heading"><div><h2>과목 등록</h2><p className="muted">신청 기간은 한국 시간(Asia/Seoul)으로 입력합니다.</p></div></div>
       <form className="course-form" onSubmit={createCourse}>
-        <label>범주<input list="category-suggestions" required maxLength={40} value={courseForm.category} onChange={(event) => setCourseForm({ ...courseForm, category: event.target.value })} /></label>
-        <datalist id="category-suggestions">{categories.map((item) => <option key={item.name} value={item.name} />)}</datalist>
+        <label>범주<input required maxLength={40} value={courseForm.category} onChange={(event) => setCourseForm({ ...courseForm, category: event.target.value })} /></label>
         <label>과목명<input required maxLength={80} value={courseForm.name} onChange={(event) => setCourseForm({ ...courseForm, name: event.target.value })} /></label>
         <label>과목 코드<input type="password" autoComplete="new-password" required maxLength={72} value={courseForm.code} onChange={(event) => setCourseForm({ ...courseForm, code: event.target.value })} /></label>
         <label>제한 인원<input type="number" min={1} max={10000} required value={courseForm.capacity} onChange={(event) => setCourseForm({ ...courseForm, capacity: event.target.value })} /></label>

@@ -192,7 +192,6 @@ export default function StudentHome() {
           <p className="eyebrow">새로운 학기의 시작</p>
           <h1>나의 가능성을 발견하는 시간</h1>
           <p className="hero-subtitle">새로운 배움. 나의 선택으로.</p>
-          <a className="button primary hero-button" href="#courses">수강과목 살펴보기 <span aria-hidden="true">→</span></a>
         </div>
       </section>
 
