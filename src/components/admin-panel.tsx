@@ -136,7 +136,6 @@ export default function AdminPanel() {
     setBusy(true); setError(""); setMessage("");
     try {
       if (!supabase) throw new Error("Supabase 환경변수가 설정되지 않았습니다.");
-      if (authEmail.trim().toLowerCase() !== "bs06@gmail.com") throw new Error("Supabase에서 등록된 관리자 이메일을 입력해주세요.");
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email: authEmail.trim(),
         password: authPassword,
