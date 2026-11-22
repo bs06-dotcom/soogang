@@ -1,0 +1,18 @@
+drop trigger if exists auto_confirm_configured_admin on auth.users;
+drop function if exists private.auto_confirm_configured_admin();
+
+create or replace function private.seed_configured_admin()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.email_confirmed_at is not null then
+    insert into private.admins (user_id) values (new.id) on conflict (user_id) do nothing;
+  end if;
+  return new;
+end;
+$$;
+
+revoke all on function private.seed_configured_admin() from public, anon, authenticated;
