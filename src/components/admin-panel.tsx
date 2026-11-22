@@ -45,7 +45,6 @@ export default function AdminPanel() {
   }, []);
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [tab, setTab] = useState<Tab>("courses");
@@ -137,42 +136,13 @@ export default function AdminPanel() {
     setBusy(true); setError(""); setMessage("");
     try {
       if (!supabase) throw new Error("Supabase 환경변수가 설정되지 않았습니다.");
-      if (authMode === "signup") {
-        const { data, error: authError } = await supabase.auth.signUp({
-          email: authEmail.trim(),
-          password: authPassword,
-          options: { emailRedirectTo: "https://soogang.vercel.app/admin" },
-        });
-        if (authError) {
-          const rateLimited = /rate_limit|429|too_many/i.test(`${authError.message} ${authError.code ?? ""}`);
-          if (rateLimited) {
-            throw new Error("이메일 발송이 제한되었습니다. 잠시 후 다시 시도하거나 기존 계정으로 로그인해주세요.");
-          }
-          const existing = /already|exist|registered|duplicate/i.test(`${authError.message} ${authError.code ?? ""}`);
-          if (existing) {
-            setAuthMode("login");
-            setMessage("이미 등록된 관리자 계정입니다. 비밀번호를 입력해 로그인해주세요.");
-            setAuthPassword("");
-            return;
-          }
-          throw new Error("관리자 계정을 등록하지 못했습니다. 이메일과 비밀번호를 확인해주세요.");
-        }
-        if (data.session) {
-          setUser(data.session.user);
-          await verifyAdmin();
-        } else {
-          setMessage("확인 이메일을 발송했습니다. 이메일의 링크를 확인한 뒤 로그인해주세요.");
-          setAuthMode("login");
-        }
-      } else {
-        const { data, error: authError } = await supabase.auth.signInWithPassword({
-          email: authEmail.trim(),
-          password: authPassword,
-        });
-        if (authError || !data.user) throw new Error("이메일 또는 비밀번호를 확인해주세요.");
-        setUser(data.user);
-        await verifyAdmin();
-      }
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: authEmail.trim(),
+        password: authPassword,
+      });
+      if (authError || !data.user) throw new Error("이메일 또는 비밀번호를 확인해주세요.");
+      setUser(data.user);
+      await verifyAdmin();
     } catch (reason) { setError(reason instanceof Error ? reason.message : "로그인하지 못했습니다."); }
     finally { setBusy(false); }
   }
@@ -308,15 +278,12 @@ export default function AdminPanel() {
     <section className="auth-card">
       <Link className="back-link" href="/">← 학생 페이지</Link>
       <p className="eyebrow">ADMIN</p><h1>관리자 로그인</h1>
-      <p className="muted">Supabase 이메일 확인을 통과한 계정으로 로그인할 수 있습니다.</p>
+      <p className="muted">계정은 Supabase Dashboard의 Authentication → Users에서 직접 등록할 수 있습니다.</p>
       <form className="form-grid" onSubmit={signIn}>
         <label>이메일<input type="email" autoComplete="username" placeholder="관리자 이메일을 입력해주세요" required value={authEmail} onChange={(event) => setAuthEmail(event.target.value)} /></label>
-        <label>비밀번호<input type="password" autoComplete={authMode === "login" ? "current-password" : "new-password"} required minLength={8} value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} /></label>
-        <button className="button primary" disabled={busy}>{busy ? "처리 중..." : authMode === "login" ? "로그인" : "관리자 계정 만들기"}</button>
+        <label>비밀번호<input type="password" autoComplete="current-password" required minLength={8} value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} /></label>
+        <button className="button primary" disabled={busy}>{busy ? "처리 중..." : "로그인"}</button>
       </form>
-      <button className="text-button auth-switch" onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setError(""); setMessage(""); }}>
-        {authMode === "login" ? "최초 관리자 계정 등록" : "로그인으로 돌아가기"}
-      </button>
       {message && <p className="notice success" role="status">{message}</p>}
       {error && <p className="notice error" role="alert">{error}</p>}
       {(!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) &&
