@@ -46,7 +46,7 @@ export default function AdminPanel() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
-  const [authEmail, setAuthEmail] = useState("bs06@gmail.com");
+  const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [tab, setTab] = useState<Tab>("courses");
   const [courses, setCourses] = useState<Course[]>([]);
@@ -139,8 +139,14 @@ export default function AdminPanel() {
       if (!supabase) throw new Error("Supabase 환경변수가 설정되지 않았습니다.");
       if (authMode === "signup") {
         if (authEmail.trim().toLowerCase() !== "bs06@gmail.com") throw new Error("관리자 이메일만 계정을 만들 수 있습니다.");
-        const { error: authError } = await supabase.auth.signUp({ email: authEmail.trim(), password: authPassword });
-        if (authError) throw authError;
+        const { error: authError } = await supabase.auth.signUp({
+          email: authEmail.trim(),
+          password: authPassword,
+          options: { emailRedirectTo: `${window.location.origin}/admin` },
+        });
+        if (authError) throw new Error(authError.message === "User already registered"
+          ? "이미 등록된 계정입니다. 로그인 화면으로 이동해 비밀번호를 입력해주세요."
+          : "관리자 계정을 등록하지 못했습니다. 이메일과 비밀번호를 확인해주세요.");
         setMessage("관리자 확인 이메일을 발송했습니다. 메일을 확인한 뒤 로그인해주세요.");
         setAuthMode("login");
       } else {
@@ -286,7 +292,7 @@ export default function AdminPanel() {
       <p className="eyebrow">ADMIN</p><h1>관리자 로그인</h1>
       <p className="muted">등록된 관리자 계정으로 로그인해주세요.</p>
       <form className="form-grid" onSubmit={signIn}>
-        <label>이메일<input type="email" autoComplete="username" required value={authEmail} onChange={(event) => setAuthEmail(event.target.value)} /></label>
+        <label>이메일<input type="email" autoComplete="username" placeholder="관리자 이메일을 입력해주세요" required value={authEmail} onChange={(event) => setAuthEmail(event.target.value)} /></label>
         <label>비밀번호<input type="password" autoComplete={authMode === "login" ? "current-password" : "new-password"} required minLength={8} value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} /></label>
         <button className="button primary" disabled={busy}>{busy ? "처리 중..." : authMode === "login" ? "로그인" : "관리자 계정 만들기"}</button>
       </form>

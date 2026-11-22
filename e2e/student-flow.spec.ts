@@ -71,6 +71,6 @@ test("future course warning and category-first status navigation are visible", a
 test("administrator route presents a separate email and password login", async ({ page }) => {
   await page.goto("/admin");
   await expect(page.getByRole("heading", { name: "관리자 로그인" })).toBeVisible();
-  await expect(page.getByLabel("이메일")).toHaveValue("bs06@gmail.com");
+  await expect(page.getByLabel("이메일")).toHaveValue("");
   await expect(page.getByLabel("비밀번호")).toBeVisible();
 });
