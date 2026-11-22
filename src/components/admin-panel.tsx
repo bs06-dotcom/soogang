@@ -144,6 +144,10 @@ export default function AdminPanel() {
           options: { emailRedirectTo: "https://soogang.vercel.app/admin" },
         });
         if (authError) {
+          const rateLimited = /rate_limit|429|too_many/i.test(`${authError.message} ${authError.code ?? ""}`);
+          if (rateLimited) {
+            throw new Error("이메일 발송이 제한되었습니다. 잠시 후 다시 시도하거나 기존 계정으로 로그인해주세요.");
+          }
           const existing = /already|exist|registered|duplicate/i.test(`${authError.message} ${authError.code ?? ""}`);
           if (existing) {
             setAuthMode("login");
