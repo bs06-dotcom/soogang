@@ -143,7 +143,16 @@ export default function AdminPanel() {
           password: authPassword,
           options: { emailRedirectTo: "https://soogang.vercel.app/admin" },
         });
-        if (authError) throw new Error("관리자 계정을 등록하지 못했습니다. 이메일과 비밀번호를 확인해주세요.");
+        if (authError) {
+          const existing = /already|exist|registered|duplicate/i.test(`${authError.message} ${authError.code ?? ""}`);
+          if (existing) {
+            setAuthMode("login");
+            setMessage("이미 등록된 관리자 계정입니다. 비밀번호를 입력해 로그인해주세요.");
+            setAuthPassword("");
+            return;
+          }
+          throw new Error("관리자 계정을 등록하지 못했습니다. 이메일과 비밀번호를 확인해주세요.");
+        }
         if (data.session) {
           setUser(data.session.user);
           await verifyAdmin();
